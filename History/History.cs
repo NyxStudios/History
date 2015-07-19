@@ -18,7 +18,7 @@ using TShockAPI.DB;
 
 namespace History
 {
-	[ApiVersion(1, 17)]
+	[ApiVersion(1, 18)]
 	public class History : TerrariaPlugin
 	{
 		public static List<Action> Actions = new List<Action>(SaveCount);
@@ -1095,7 +1095,7 @@ namespace History
 									//effect only
 									if (type == 1 && (etype == 0 || etype == 2 || etype == 4))
 										return;
-									logEdit(etype, Main.tile[X, Y], X, Y, type, TShock.Players[e.Msg.whoAmI].UserAccountName, new List<Vector2>(), style);
+									logEdit(etype, Main.tile[X, Y], X, Y, type, TShock.Players[e.Msg.whoAmI].User.Name, new List<Vector2>(), style);
 								}
 							}
 						}
@@ -1112,7 +1112,7 @@ namespace History
 								{
 									byte style = 0;
 									adjustFurniture(ref X, ref Y, ref style);
-									Queue(TShock.Players[e.Msg.whoAmI].UserAccountName, X, Y, 0, Main.tile[X, Y].type, style, Main.tile[X, Y].color());
+									Queue(TShock.Players[e.Msg.whoAmI].User.Name, X, Y, 0, Main.tile[X, Y].type, style, Main.tile[X, Y].color());
 								}
 							}
 						}
@@ -1124,7 +1124,7 @@ namespace History
 							byte color = e.Msg.readBuffer[e.Index + 4];
 							if (regionCheck(TShock.Players[e.Msg.whoAmI], X, Y))
 							{
-								Queue(TShock.Players[e.Msg.whoAmI].UserAccountName, X, Y, 25, color, 0, Main.tile[X, Y].color());
+								Queue(TShock.Players[e.Msg.whoAmI].User.Name, X, Y, 25, color, 0, Main.tile[X, Y].color());
 							}
 						}
 						break;
@@ -1135,7 +1135,7 @@ namespace History
 							byte color = e.Msg.readBuffer[e.Index + 4];
 							if (regionCheck(TShock.Players[e.Msg.whoAmI], X, Y))
 							{
-								Queue(TShock.Players[e.Msg.whoAmI].UserAccountName, X, Y, 26, color, 0, Main.tile[X, Y].wallColor());
+								Queue(TShock.Players[e.Msg.whoAmI].User.Name, X, Y, 26, color, 0, Main.tile[X, Y].wallColor());
 							}
 						}
 						break;
@@ -1146,7 +1146,7 @@ namespace History
 							int Y = BitConverter.ToInt16(e.Msg.readBuffer, e.Index + 4);
 							byte s = 0;
 							adjustFurniture(ref X, ref Y, ref s); //Adjust coords so history picks it up, readSign() adjusts back to origin anyway
-							Queue(TShock.Players[e.Msg.whoAmI].UserAccountName, X, Y, 27, data: signI, text: Main.sign[signI].text);
+							Queue(TShock.Players[e.Msg.whoAmI].User.Name, X, Y, 27, data: signI, text: Main.sign[signI].text);
 						}
 						break;
 				}
@@ -1181,7 +1181,7 @@ namespace History
 			}
 			SqlTableCreator sqlcreator = new SqlTableCreator(Database,
 				Database.GetSqlType() == SqlType.Sqlite ? (IQueryBuilder)new SqliteQueryCreator() : new MysqlQueryCreator());
-			sqlcreator.EnsureExists(new SqlTable("History",
+			sqlcreator.EnsureTableStructure(new SqlTable("History",
 				new SqlColumn("Time", MySqlDbType.Int32),
 				new SqlColumn("Account", MySqlDbType.VarChar) { Length = 50 },
 				new SqlColumn("Action", MySqlDbType.Int32),
@@ -1230,7 +1230,7 @@ namespace History
 					catch (Exception ex)
 					{
 						command.Error("An error occurred. Check the logs for more details.");
-						Log.ConsoleError(ex.ToString());
+						TShock.Log.ConsoleError(ex.ToString());
 					}
 				}
 				catch (OperationCanceledException)
